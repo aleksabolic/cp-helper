@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { spawn } from 'child_process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 class CPHelperViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'cpHelperView';
+  public static readonly viewType = 'cp-helper.cpHelperView';
   private _view?: vscode.WebviewView;
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -25,9 +27,26 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async message => {
       switch (message.command) {
         case 'runAllTests':
+          // TODO: Implement run all 
+          vscode.window.showInformationMessage("Working on it...");
           const results = await runAllTests(message.testCases);
-          webviewView.webview.postMessage({ command: 'testResult', results });
+          vscode.window.showInformationMessage("Status: " + results[0].status);
+          webviewView.webview.postMessage({ command: 'testResult', results: results });
           break;
+
+        case 'submitTestCase':
+          try {
+            const result = await runAllTests([message.testCase]);
+            if (result.length > 0) {
+              vscode.window.showInformationMessage("Status: " + result[0].status);
+            } else {
+              vscode.window.showErrorMessage("No result found");
+            }
+          } catch (error: any) {
+            vscode.window.showErrorMessage("Error running test case: " + error.message);
+          }
+          break;
+          
       }
     });
   }
@@ -36,45 +55,14 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
 
-    return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-        <meta charset="UTF-8">
-        <title>CP Helper</title>
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}';">
-        <style nonce="${nonce}">
-            /* Your CSS styles */
-        </style>
-        </head>
-        <body>
-        <div id="test-cases">
-            <!-- Test cases will be dynamically added here -->
-        </div>
-        <button id="add-test-case">Add New Test Case</button>
-        <button id="run-all">Run All</button>
+    // Path to the HTML file
+    const htmlPath = path.join(this._extensionUri.fsPath, 'media', 'cpHelper.html');
+    let html = fs.readFileSync(htmlPath, 'utf8');
 
-        <script nonce="${nonce}">
-            const vscode = acquireVsCodeApi();
+    // Replace the NONCE_PLACEHOLDER with the actual nonce
+    html = html.replace(/NONCE_PLACEHOLDER/g, nonce);
 
-            // Your JavaScript code to handle test cases
-            document.getElementById('run-all').addEventListener('click', () => {
-                vscode.postMessage({ command: 'runAllTests', testCases });
-            });
-
-            window.addEventListener('message', event => {
-                const message = event.data;
-                switch (message.command) {
-                    case 'testResult':
-                        // Update UI with test result
-                        break;
-                }
-            });
-
-        </script>
-        </body>
-        </html>
-    `;
+    return html;
   }
 }  
 
@@ -89,11 +77,9 @@ function getNonce() {
 
 export function activate(context: vscode.ExtensionContext) {
 
-  console.log('CP Helper extension is now active!');
-
-  const provider = new CPHelperViewProvider(context.extensionUri);
+  const provider = new CPHelperViewProvider(context.extensionUri);  
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(CPHelperViewProvider.viewType, provider)
+      vscode.window.registerWebviewViewProvider(CPHelperViewProvider.viewType, provider)
   );
 
   let createNewFile = vscode.commands.registerCommand('cp-helper.createNewFile', createNewFileHandler);
@@ -102,6 +88,15 @@ export function activate(context: vscode.ExtensionContext) {
   let markAsWA = vscode.commands.registerCommand('cp-helper.markAsWA', () => markProblem('WA'));
 
   context.subscriptions.push(createNewFile, createContest, markAsAC, markAsWA);
+
+
+  // Create file status bar icon 
+  let myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+  myStatusBarItem.text = `$(smiley) Create new file`; // TODO: Change the icon 
+  myStatusBarItem.command = 'cp-helper.createNewFile';
+  myStatusBarItem.show();
+
+  context.subscriptions.push(myStatusBarItem);
 }
 
 async function runAllTests(testCases: any[]): Promise<any[]> {
@@ -196,6 +191,7 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
 }
 
 async function createNewFileHandler() {
+  // TODO: Add check for existing file name collisions 
   const url = await vscode.window.showInputBox({ prompt: 'Enter problem URL' });
   if (!url) return;
 
@@ -220,9 +216,28 @@ async function createNewFileHandler() {
   const now = new Date();
   const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
 
+  // Path to the template folder inside your extension's directory
+  const extensionPath = vscode.extensions.getExtension('local.cp-helper')?.extensionPath;
+  if (!extensionPath) {
+    vscode.window.showErrorMessage('Unable to locate extension folder');
+    return;
+  }
+
+  const templateUri = vscode.Uri.file(`${extensionPath}/templates/main.cpp`);
+
+  let template = '';
+  try {
+    // Read the template file content
+    const templateFile = await vscode.workspace.fs.readFile(templateUri);
+    template = templateFile.toString();
+  } catch (err: any) {
+    vscode.window.showErrorMessage(`Failed to load template: ${err.message}`);
+    return;
+  }
+
   try {
     // Create the file with header
-    await vscode.workspace.fs.writeFile(fileUri, Buffer.from(header, 'utf8'));
+    await vscode.workspace.fs.writeFile(fileUri, Buffer.from(header + template, 'utf8'));
     // Open the file
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);

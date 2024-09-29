@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CP Helper</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-NONCE_PLACEHOLDER'; style-src 'nonce-NONCE_PLACEHOLDER';">
+    <style nonce="NONCE_PLACEHOLDER">
+        .test-case {
+            border: 2px solid #ccc; /* Increased border width for better visibility */
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px; /* Rounded corners for aesthetics */
+            transition: border-color 0.3s ease; /* Smooth transition for color changes */
+        }
+        .test-case input {
+            display: block;
+            margin: 5px 0;
+            width: 90%; /* Ensures inputs are not too wide */
+            padding: 5px;
+        }
+        .test-case button {
+            margin-right: 10px;
+            padding: 5px 10px;
+        }
+    
+        /* New Classes for Test Results */
+        .passed {
+            border-color: green;
+        }
+        .failed {
+            border-color: red;
+        }
+    </style>    
+</head>
+<body>
+    <div id="test-cases">
+        <!-- Test cases will be dynamically added here -->
+    </div>
+    <button id="add-test-case">Add New Test Case</button>
+    <button id="run-all">Run All</button>
+
+    <script nonce="NONCE_PLACEHOLDER">
+        const vscode = acquireVsCodeApi();
+        let testCaseCount = 0;
+
+        document.getElementById('add-test-case').addEventListener('click', () => {
+            addTestCase();
+        });
+
+        function addTestCase() {
+            testCaseCount++;
+            const testCasesContainer = document.getElementById('test-cases');
+            
+            const testCaseDiv = document.createElement('div');
+            testCaseDiv.classList.add('test-case');
+            testCaseDiv.id = `test-case-${testCaseCount}`;
+            
+            const testCaseTitle = document.createElement('p');
+            testCaseTitle.textContent = `#${testCaseCount} Test Case`;
+            testCaseTitle.style.fontWeight = 'bold';
+            testCaseDiv.appendChild(testCaseTitle);
+            
+            const inputBox = document.createElement('input');
+            inputBox.type = 'text';
+            inputBox.placeholder = 'Input';
+            testCaseDiv.appendChild(inputBox);
+            
+            const outputBox = document.createElement('input');
+            outputBox.type = 'text';
+            outputBox.placeholder = 'Expected Output';
+            testCaseDiv.appendChild(outputBox);
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                testCasesContainer.removeChild(testCaseDiv);
+            });
+            testCaseDiv.appendChild(deleteButton);
+            
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'Submit';
+            submitButton.addEventListener('click', () => {
+                vscode.postMessage({
+                    command: 'submitTestCase',
+                    testCase: {
+                        input: inputBox.value,
+                        expectedOutput: outputBox.value
+                    }
+                });
+            });
+            testCaseDiv.appendChild(submitButton);
+            
+            testCasesContainer.appendChild(testCaseDiv);
+        }
+
+        // Updated Run All Button Click Handler
+        document.getElementById('run-all').addEventListener('click', () => {
+            const testCases = document.querySelectorAll('.test-case');
+            const testCasesOut = [];
+
+            testCases.forEach(testCase => {
+                // Select the input and expected output fields
+                const inputField = testCase.querySelector('input[placeholder="Input"]');
+                const outputField = testCase.querySelector('input[placeholder="Expected Output"]');
+
+                // Ensure both fields exist before adding
+                if (inputField && outputField) {
+                    const obj = {
+                        input: inputField.value.trim(),
+                        expectedOutput: outputField.value.trim()
+                    }
+                    testCasesOut.push(obj);
+                }
+            });
+
+            // Send the collected data to VS Code
+            vscode.postMessage({
+                command: 'runAllTests',
+                testCases: testCasesOut
+            });
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'testResult':
+                    handleTestResults(message.results)
+                    break;
+            }
+        });
+
+        function handleTestResults(results) {
+            const testCases = document.querySelectorAll('.test-case');
+
+            if (!Array.isArray(results)) {
+                console.error('Invalid results format: Expected an array.');
+                return;
+            }
+
+            if (results.length !== testCases.length) {
+                console.warn('Number of results does not match number of test cases.');
+                // Depending on your needs, you might handle this discrepancy differently.
+            }
+
+            testCases.forEach((testCase, index) => {
+                // Remove existing status classes
+                testCase.classList.remove('passed', 'failed');
+
+                const result = results[index].status;
+
+                if (result == "AC") {
+                    testCase.classList.add('passed');
+                } else {
+                    testCase.classList.add('failed');
+                }
+
+                // Optionally, display a result message within the test case
+                displayTestResult(testCase, result);
+            });
+        }
+
+        /**
+         * Displays the test result message within a test case.
+         * @param {HTMLElement} testCase - The test case div element.
+         * @param {Object} result - The result object for the test case.
+         */
+        function displayTestResult(testCase, result) {
+            // Remove any existing result message
+            let resultMsg = testCase.querySelector('.result-message');
+            if (resultMsg) {
+                resultMsg.remove();
+            }
+
+            // Create a new result message element
+            resultMsg = document.createElement('p');
+            resultMsg.classList.add('result-message');
+            resultMsg.textContent = result == "AC" ? '✅ Passed' : '❌ Failed';
+            resultMsg.style.fontWeight = 'bold';
+            resultMsg.style.marginTop = '10px';
+
+            testCase.appendChild(resultMsg);
+        }
+    </script>
+</body>
+</html>
