@@ -1,0 +1,90 @@
+{
+  "name": "cp-helper",
+  "displayName": "competitve-programming-helper",
+  "description": "VS Code extension for competitive programming workflow",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:cpHelperView",
+    "onCommand:cp-helper.createNewFile",
+    "onCommand:cp-helper.createContest",
+    "onCommand:cp-helper.markAsAC",
+    "onCommand:cp-helper.markAsWA"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "menus": {
+      "editor/title": [
+        {
+          "command": "cp-helper.markAsAC",
+          "when": "resourceLangId == cpp",
+          "group": "navigation"
+        },
+        {
+          "command": "cp-helper.markAsWA",
+          "when": "resourceLangId == cpp",
+          "group": "navigation"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "cp-helper.createNewFile",
+        "title": "Create New File"
+      },
+      {
+        "command": "cp-helper.createContest",
+        "title": "Create Contest"
+      },
+      {
+        "command": "cp-helper.markAsAC",
+        "title": "Mark as AC"
+      },
+      {
+        "command": "cp-helper.markAsWA",
+        "title": "Mark as WA"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cp-helper",
+          "title": "CP Helper",
+          "icon": "resources/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "cp-helper": [
+        {
+          "id": "cpHelperView",
+          "name": "CP Helper"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.93.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "eslint": "^9.9.1",
+    "typescript": "^5.5.4",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
