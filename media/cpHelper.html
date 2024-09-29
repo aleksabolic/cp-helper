@@ -12,15 +12,67 @@
             border-radius: 5px; /* Rounded corners for aesthetics */
             transition: border-color 0.3s ease; /* Smooth transition for color changes */
         }
-        .test-case input {
+        .test-case label {
             display: block;
-            margin: 5px 0;
-            width: 90%; /* Ensures inputs are not too wide */
-            padding: 5px;
+            margin-top: 10px;
+            font-weight: normal;
+        }
+        .test-case textarea {
+            display: block;
+            margin: 5px 0 15px 0;
+            padding: 8px;
+            resize: none; /* Allows users to resize vertically */
+            font-family: monospace; /* Optional: for code-like appearance */
+            font-size: 14px;
+            color: white;
+            box-sizing: border-box; /* Ensures padding doesn't exceed container */
+            background-color: black;
         }
         .test-case button {
             margin-right: 10px;
             padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        /* Button Base Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #fff;
+            transition: background-color 0.3s ease;
+            margin-top: 5px;
+        }
+
+        /* Specific Button Styles */
+        .btn-add {
+            background-color: #28a745; /* Green */
+        }
+        .btn-run {
+            background-color: #ffc107; /* Yellow */
+            color: #212529; /* Dark text for better contrast */
+        }
+        .btn-delete {
+            background-color: #dc3545; /* Red */
+        }
+        .btn-submit {
+            background-color: #007bff; /* Blue */
+        }
+
+        /* Hover Effects */
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Icon Styling */
+        .btn svg {
+            margin-right: 5px; /* Space between icon and text */
+            fill: currentColor; /* Ensure SVGs inherit the button's text color */
         }
     
         /* New Classes for Test Results */
@@ -30,14 +82,32 @@
         .failed {
             border-color: red;
         }
+        .result-message {
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>    
 </head>
 <body>
     <div id="test-cases">
         <!-- Test cases will be dynamically added here -->
     </div>
-    <button id="add-test-case">Add New Test Case</button>
-    <button id="run-all">Run All</button>
+    
+    <!-- Add New Test Case Button with Plus Icon -->
+    <button id="add-test-case" class="btn btn-add">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-plus" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+            <path d="M8 4a.5.5 0 0 1 .5.5V7.5H11.5a.5.5 0 0 1 0 1H8.5V11.5a.5.5 0 0 1-1 0V8.5H4.5a.5.5 0 0 1 0-1H7.5V4.5A.5.5 0 0 1 8 4z"/>
+        </svg>
+        Add New Test Case
+    </button>
+    
+    <!-- Run All Button with Arrow Icon -->
+    <button id="run-all" class="btn btn-run">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 1 1 .708-.708l4 4a.498.498 0 0 1 .146.35.498.498 0 0 1-.146.35l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+        </svg>
+        Run All
+    </button>
 
     <script nonce="NONCE_PLACEHOLDER">
         const vscode = acquireVsCodeApi();
@@ -60,31 +130,61 @@
             testCaseTitle.style.fontWeight = 'bold';
             testCaseDiv.appendChild(testCaseTitle);
             
-            const inputBox = document.createElement('input');
-            inputBox.type = 'text';
-            inputBox.placeholder = 'Input';
+            // Create Input Textarea
+            const inputLabel = document.createElement('label');
+            inputLabel.textContent = 'Input:';
+            inputLabel.htmlFor = `input-${testCaseCount}`;
+            testCaseDiv.appendChild(inputLabel);
+            
+            const inputBox = document.createElement('textarea');
+            inputBox.id = `input-${testCaseCount}`;
+            inputBox.rows = 4; // Adjust as needed
+            inputBox.style.width = '100%'; // Ensures textarea takes full width
             testCaseDiv.appendChild(inputBox);
             
-            const outputBox = document.createElement('input');
-            outputBox.type = 'text';
-            outputBox.placeholder = 'Expected Output';
+            // Create Expected Output Textarea
+            const outputLabel = document.createElement('label');
+            outputLabel.textContent = 'Expected Output:';
+            outputLabel.htmlFor = `output-${testCaseCount}`;
+            testCaseDiv.appendChild(outputLabel);
+            
+            const outputBox = document.createElement('textarea');
+            outputBox.id = `output-${testCaseCount}`;
+            outputBox.rows = 4; // Adjust as needed
+            outputBox.style.width = '100%'; // Ensures textarea takes full width
             testCaseDiv.appendChild(outputBox);
             
+            // Create Delete Button with Trash Icon
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
+            deleteButton.classList.add('btn', 'btn-delete');
+            deleteButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon-delete" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5v-7zM4.118 4 4 4.059V4.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4.059L11.882 4H4.118zM14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z"/>
+                </svg>
+                Delete
+            `;
             deleteButton.addEventListener('click', () => {
                 testCasesContainer.removeChild(testCaseDiv);
             });
             testCaseDiv.appendChild(deleteButton);
             
+            // Create Submit Button with Checkmark Icon
             const submitButton = document.createElement('button');
-            submitButton.textContent = 'Submit';
+            submitButton.classList.add('btn', 'btn-submit');
+            submitButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon-submit" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+                    <path fill-rule="evenodd" d="M16 2.748l-3.39 4.94L8 10.5 3.39 11.688 1.5 12.5 3.89 9.606l1.608-2.34L16 2.748z"/>
+                </svg>
+                Submit
+            `;
+            let tempCount = testCaseCount;
             submitButton.addEventListener('click', () => {
                 vscode.postMessage({
                     command: 'submitTestCase',
+                    index: tempCount,
                     testCase: {
                         input: inputBox.value,
-                        expectedOutput: outputBox.value
+                        expectedOutput: outputBox.value,
                     }
                 });
             });
@@ -100,8 +200,8 @@
 
             testCases.forEach(testCase => {
                 // Select the input and expected output fields
-                const inputField = testCase.querySelector('input[placeholder="Input"]');
-                const outputField = testCase.querySelector('input[placeholder="Expected Output"]');
+                const inputField = testCase.querySelector('textarea[id^="input-"]');
+                const outputField = testCase.querySelector('textarea[id^="output-"]');
 
                 // Ensure both fields exist before adding
                 if (inputField && outputField) {
@@ -126,8 +226,28 @@
                 case 'testResult':
                     handleTestResults(message.results)
                     break;
+                case 'singleResult':
+                    handleSingleResult(message.result, message.index);
+                    break;       
             }
         });
+
+        function handleSingleResult(result, index){
+            const testCase = document.getElementById(`test-case-${index}`);
+
+            testCase.classList.remove('passed', 'failed');
+
+            const status = result.status;
+
+            if (status == "AC") {
+                testCase.classList.add('passed');
+            } else {
+                testCase.classList.add('failed');
+            }
+
+            // Optionally, display a result message within the test case
+            displayTestResult(testCase, status);
+        }
 
         function handleTestResults(results) {
             const testCases = document.querySelectorAll('.test-case');

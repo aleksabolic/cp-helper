@@ -27,26 +27,14 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async message => {
       switch (message.command) {
         case 'runAllTests':
-          // TODO: Implement run all 
-          vscode.window.showInformationMessage("Working on it...");
           const results = await runAllTests(message.testCases);
-          vscode.window.showInformationMessage("Status: " + results[0].status);
           webviewView.webview.postMessage({ command: 'testResult', results: results });
           break;
-
         case 'submitTestCase':
-          try {
-            const result = await runAllTests([message.testCase]);
-            if (result.length > 0) {
-              vscode.window.showInformationMessage("Status: " + result[0].status);
-            } else {
-              vscode.window.showErrorMessage("No result found");
-            }
-          } catch (error: any) {
-            vscode.window.showErrorMessage("Error running test case: " + error.message);
-          }
+          vscode.window.showErrorMessage("Kurac: " + message.index);
+          const result = await runAllTests([message.testCase]);
+          webviewView.webview.postMessage({ command: 'singleResult', result: result[0], index: message.index });
           break;
-          
       }
     });
   }
