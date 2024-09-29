@@ -31,7 +31,6 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
           webviewView.webview.postMessage({ command: 'testResult', results: results });
           break;
         case 'submitTestCase':
-          vscode.window.showErrorMessage("Kurac: " + message.index);
           const result = await runAllTests([message.testCase]);
           webviewView.webview.postMessage({ command: 'singleResult', result: result[0], index: message.index });
           break;
@@ -205,7 +204,7 @@ async function createNewFileHandler() {
   const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
 
   // Path to the template folder inside your extension's directory
-  const extensionPath = vscode.extensions.getExtension('local.cp-helper')?.extensionPath;
+  const extensionPath = vscode.extensions.getExtension('retard.cp-helper')?.extensionPath;
   if (!extensionPath) {
     vscode.window.showErrorMessage('Unable to locate extension folder');
     return;
