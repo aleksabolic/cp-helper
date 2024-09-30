@@ -46,8 +46,13 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
     const htmlPath = path.join(this._extensionUri.fsPath, 'media', 'cpHelper.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
 
+    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'scripts.js'));
+
     // Replace the NONCE_PLACEHOLDER with the actual nonce
-    html = html.replace(/NONCE_PLACEHOLDER/g, nonce);
+    html = html.replace(/NONCE_PLACEHOLDER/g, nonce)
+               .replace('styles.css', styleUri.toString())
+               .replace('scripts.js', scriptUri.toString());
 
     return html;
   }
@@ -79,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Create file status bar icon 
   let myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  myStatusBarItem.text = `$(smiley) Create new file`; // TODO: Change the icon 
+  myStatusBarItem.text = `$(plus) Create new file`;
   myStatusBarItem.command = 'cp-helper.createNewFile';
   myStatusBarItem.show();
 
@@ -178,7 +183,6 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
 }
 
 async function createNewFileHandler() {
-  // TODO: Add check for existing file name collisions 
   const url = await vscode.window.showInputBox({ prompt: 'Enter problem URL' });
   if (!url) return;
 
@@ -199,6 +203,20 @@ async function createNewFileHandler() {
   const platformFolder = vscode.Uri.joinPath(workspaceFolders[0].uri, platform);
   const fileUri = vscode.Uri.joinPath(platformFolder, `${fileName}.cpp`);
 
+  // Check if the file already exists and return if it does 
+  try {
+    await vscode.workspace.fs.stat(fileUri);
+    vscode.window.showErrorMessage(`File "${fileName}.cpp" already exists.`);
+    return;
+  } catch (error: any) {
+    if (error instanceof vscode.FileSystemError && error.code === 'FileNotFound') {
+      // File does not exist, proceed with creation
+    } else {
+      vscode.window.showErrorMessage(`Error checking file existence: ${error.message}`);
+      return;
+    }
+  }
+  
   // Header content
   const now = new Date();
   const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
