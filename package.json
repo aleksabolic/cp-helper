@@ -48,27 +48,81 @@
           "command": "cp-helper.markAsWA",
           "when": "resourceLangId == cpp",
           "group": "navigation"
+        },
+        {
+          "command": "cp-helper.addCategories",
+          "when": "resourceLangId == cpp",
+          "group": "navigation"
         }
       ]
     },
     "commands": [
       {
         "command": "cp-helper.createNewFile",
-        "title": "Create New File"
+        "title": "Create New File",
+        "category": "CP Helper"
       },
       {
         "command": "cp-helper.createContest",
-        "title": "Create Contest"
+        "title": "Create Contest",
+        "category": "CP Helper"
       },
       {
         "command": "cp-helper.markAsAC",
-        "title": "Mark as AC"
+        "title": "Mark as AC",
+        "category": "CP Helper"
       },
       {
         "command": "cp-helper.markAsWA",
-        "title": "Mark as WA"
+        "title": "Mark as WA",
+        "category": "CP Helper"
+      },
+      {
+        "command": "cp-helper.addCategories",
+        "title": "Add Categories to Problem",
+        "category": "CP Helper"
       }
-    ]
+    ],
+    "commandPalette": [
+      {
+        "command": "cp-helper.addCategories",
+        "when": "editorLangId == cpp"
+      },
+      {
+        "command": "cp-helper.createNewFile",
+        "when": "extensionStatus == installed"
+      },
+      {
+        "command": "cp-helper.createContest",
+        "when": "extensionStatus == installed"
+      },
+      {
+        "command": "cp-helper.markAsAC", 
+        "when": "editorLangId == cpp"
+      },
+      {
+        "command": "cp-helper.markAsWA",
+        "when": "editorLangId == cpp"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "CP Helper Configuration",
+      "properties": {
+        "cp-helper.categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Data Structures",
+            "Dynamic Programming",
+            "Greedy"
+          ],
+          "description": "List of categories available for selection."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
