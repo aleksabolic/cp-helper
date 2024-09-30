@@ -43,7 +43,7 @@ class CPHelperViewProvider implements vscode.WebviewViewProvider {
     const nonce = getNonce();
 
     // Path to the HTML file
-    const htmlPath = path.join(this._extensionUri.fsPath, 'media', 'cpHelper.html');
+    const htmlPath = path.join(this._extensionUri.fsPath, 'media', 'index.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
 
     const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css'));
