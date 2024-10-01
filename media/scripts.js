@@ -134,7 +134,7 @@ function handleSingleResult(result, index){
     }
 
     // Optionally, display a result message within the test case
-    displayTestResult(testCase, status);
+    displayTestResult(testCase, status, result.output);
 }
 
 function handleTestResults(results) {
@@ -154,16 +154,17 @@ function handleTestResults(results) {
         // Remove existing status classes
         testCase.classList.remove('passed', 'failed');
 
-        const result = results[index].status;
+        const result = results[index];
+        const status = result.status;
 
-        if (result == "AC") {
+        if (status == "AC") {
             testCase.classList.add('passed');
         } else {
             testCase.classList.add('failed');
         }
 
         // Optionally, display a result message within the test case
-        displayTestResult(testCase, result);
+        displayTestResult(testCase, status, result.output);
     });
 }
 
@@ -172,7 +173,7 @@ function handleTestResults(results) {
  * @param {HTMLElement} testCase - The test case div element.
  * @param {Object} result - The result object for the test case.
  */
-function displayTestResult(testCase, result) {
+function displayTestResult(testCase, status, output) {
     // Remove any existing result message
     let resultMsg = testCase.querySelector('.result-message');
     if (resultMsg) {
@@ -182,9 +183,32 @@ function displayTestResult(testCase, result) {
     // Create a new result message element
     resultMsg = document.createElement('p');
     resultMsg.classList.add('result-message');
-    resultMsg.textContent = result == "AC" ? '✅ Passed' : '❌ Failed';
+    resultMsg.textContent = status == "AC" ? '✅ Passed' : `❌ ${status}`;
     resultMsg.style.fontWeight = 'bold';
     resultMsg.style.marginTop = '10px';
 
     testCase.appendChild(resultMsg);
+
+    // Remove any existing output message
+    let outputMsg = testCase.querySelector('.output-message');
+    if (outputMsg) {
+        outputMsg.remove();
+    }
+
+    // Create a new output message element
+    outputMsg = document.createElement('div');
+    outputMsg.classList.add('output-message');
+    outputMsg.style.marginTop = '5px';
+
+    const outputLabel = document.createElement('p');
+    outputLabel.textContent = 'Actual Output:';
+    outputLabel.style.fontWeight = 'bold';
+
+    const outputContent = document.createElement('pre');
+    outputContent.textContent = output || 'No output';
+
+    outputMsg.appendChild(outputLabel);
+    outputMsg.appendChild(outputContent);
+
+    testCase.appendChild(outputMsg);
 }

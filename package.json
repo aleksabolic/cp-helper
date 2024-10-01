@@ -2,7 +2,7 @@
   "name": "cp-helper",
   "displayName": "competitve-programming-helper",
   "description": "VS Code extension for competitive programming workflow",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.93.0"
   },
