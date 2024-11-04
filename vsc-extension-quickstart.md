@@ -25,7 +25,7 @@
 
 * You can open the full set of our API when you open the file `node_modules/@types/vscode/index.d.ts`.
 
-## Run tests
+## Run testss
 
 * Install the [Extension Test Runner](https://marketplace.visualstudio.com/items?itemName=ms-vscode.extension-test-runner)
 * Run the "watch" task via the **Tasks: Run Task** command. Make sure this is running, or tests might not be discovered.

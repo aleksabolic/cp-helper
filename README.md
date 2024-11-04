@@ -36,21 +36,3 @@ Configure **CP Helper** to suit your workflow:
 
 3. **Delete a Test Case**:
    - Click the **Delete** button within a test case to remove it.
-
-## Known Issues
-
-- **Issue 1**: Description of a known issue.
-- **Issue 2**: Description of another known issue.
-
-## Release Notes
-
-### [1.0.0] - 2024-04-27
-- Initial release of **CP Helper**.
-- Added core functionalities: adding, deleting, and running test cases.
-- Implemented visual feedback for test results.
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any enhancements or bug fixes.
-
-**Enjoy using CP Helper!**
