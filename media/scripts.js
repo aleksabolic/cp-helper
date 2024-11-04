@@ -26,8 +26,8 @@ function addTestCase() {
     
     const inputBox = document.createElement('textarea');
     inputBox.id = `input-${testCaseCount}`;
-    inputBox.rows = 4; // Adjust as needed
-    inputBox.style.width = '100%'; // Ensures textarea takes full width
+    inputBox.rows = 4; 
+    inputBox.style.width = '100%'; 
     testCaseDiv.appendChild(inputBox);
     
     // Create Expected Output Textarea
@@ -38,8 +38,8 @@ function addTestCase() {
     
     const outputBox = document.createElement('textarea');
     outputBox.id = `output-${testCaseCount}`;
-    outputBox.rows = 4; // Adjust as needed
-    outputBox.style.width = '100%'; // Ensures textarea takes full width
+    outputBox.rows = 4; 
+    outputBox.style.width = '100%'; 
     testCaseDiv.appendChild(outputBox);
     
     // Create Delete Button with Trash Icon
@@ -147,7 +147,6 @@ function handleTestResults(results) {
 
     if (results.length !== testCases.length) {
         console.warn('Number of results does not match number of test cases.');
-        // Depending on your needs, you might handle this discrepancy differently.
     }
 
     testCases.forEach((testCase, index) => {
@@ -162,8 +161,6 @@ function handleTestResults(results) {
         } else {
             testCase.classList.add('failed');
         }
-
-        // Optionally, display a result message within the test case
         displayTestResult(testCase, status, result.output);
     });
 }

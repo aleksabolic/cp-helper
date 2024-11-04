@@ -165,7 +165,7 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
     const timeout = setTimeout(() => {
       isTimeout = true;
       child.kill();
-    }, 2000); // Set a timeout of 2 seconds (adjust as needed)
+    }, 2000); // Set a timeout of 2 seconds 
 
     child.stdin.write(input);
     child.stdin.end();
