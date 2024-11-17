@@ -15,7 +15,8 @@
     "onCommand:cp-helper.createNewFile",
     "onCommand:cp-helper.createContest",
     "onCommand:cp-helper.markAsAC",
-    "onCommand:cp-helper.markAsWA"
+    "onCommand:cp-helper.markAsWA",
+    "onCommand:cp-helper.copyCode"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -54,6 +55,13 @@
           "when": "resourceLangId == cpp",
           "group": "navigation"
         }
+      ],
+      "editor/context": [
+        {
+          "command": "cp-helper.copyCode",
+          "when": "resourceLangId == cpp",
+          "group": "9_cutcopypaste"
+        }
       ]
     },
     "commands": [
@@ -81,6 +89,18 @@
         "command": "cp-helper.addCategories",
         "title": "Add Categories to Problem",
         "category": "CP Helper"
+      },
+      {
+        "command": "cp-helper.copyCode",
+        "title": "Copy without Headers",
+        "category": "CP Helper"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "cp-helper.copyCode",
+        "key": "ctrl+alt+c",
+        "when": "editorTextFocus"
       }
     ],
     "commandPalette": [
@@ -107,7 +127,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "CP Helper Configuration",
+      "title": "CP Helper",
       "properties": {
         "cp-helper.categories": {
           "type": "array",

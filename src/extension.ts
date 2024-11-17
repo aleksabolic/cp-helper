@@ -78,8 +78,9 @@ export function activate(context: vscode.ExtensionContext) {
   let createContest = vscode.commands.registerCommand('cp-helper.createContest', createContestHandler);
   let markAsAC = vscode.commands.registerCommand('cp-helper.markAsAC', () => markProblem('AC'));
   let markAsWA = vscode.commands.registerCommand('cp-helper.markAsWA', () => markProblem('WA'));
+  let copyCode = vscode.commands.registerCommand('cp-helper.copyCode', copyNoHeaders);
 
-  context.subscriptions.push(createNewFile, createContest, markAsAC, markAsWA);
+  context.subscriptions.push(createNewFile, createContest, markAsAC, markAsWA, copyCode);
 
 
   // Create file status bar icon 
@@ -411,4 +412,31 @@ function insertCategoriesIntoHeader(editor: vscode.TextEditor, categories: strin
       vscode.window.showErrorMessage('Failed to insert categories into the header.');
     }
   });
+}
+
+async function copyNoHeaders() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active editor');
+    return;
+  }
+
+  const document = editor.document;
+  const text = document.getText();
+
+  // Split the text into lines
+  const lines = text.split(/\r?\n/);
+  let startLine = 0;
+
+  // find first #
+  for(startLine; startLine<lines.length; startLine++){
+    if(lines[startLine].trim().startsWith('#')){break;} 
+  }
+  
+  // Get the code without headers
+  const codeWithoutHeaders = lines.slice(startLine).join('\n');
+
+  // Copy the code to the clipboard
+  await vscode.env.clipboard.writeText(codeWithoutHeaders);
+  vscode.window.showInformationMessage('Code without headers copied to clipboard.');
 }
