@@ -190,6 +190,29 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
   });
 }
 
+async function getTemplate(){
+  // Path to the template folder inside your extension's directory
+  const extensionPath = vscode.extensions.getExtension('retard.cp-helper')?.extensionPath;
+  if (!extensionPath) {
+    vscode.window.showErrorMessage('Unable to locate extension folder');
+    return;
+  }
+
+  const templateUri = vscode.Uri.file(`${extensionPath}/templates/main.cpp`);
+
+  let template = '';
+  try {
+    // Read the template file content
+    const templateFile = await vscode.workspace.fs.readFile(templateUri);
+    template = templateFile.toString();
+  } catch (err: any) {
+    vscode.window.showErrorMessage(`Failed to load template: ${err.message}`);
+    return;
+  }
+
+  return template;
+}
+
 async function createNewFileHandler() {
   const url = await vscode.window.showInputBox({ prompt: 'Enter problem URL' });
   if (!url) return;
@@ -228,25 +251,7 @@ async function createNewFileHandler() {
   // Header content
   const now = new Date();
   const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
-
-  // Path to the template folder inside your extension's directory
-  const extensionPath = vscode.extensions.getExtension('retard.cp-helper')?.extensionPath;
-  if (!extensionPath) {
-    vscode.window.showErrorMessage('Unable to locate extension folder');
-    return;
-  }
-
-  const templateUri = vscode.Uri.file(`${extensionPath}/templates/main.cpp`);
-
-  let template = '';
-  try {
-    // Read the template file content
-    const templateFile = await vscode.workspace.fs.readFile(templateUri);
-    template = templateFile.toString();
-  } catch (err: any) {
-    vscode.window.showErrorMessage(`Failed to load template: ${err.message}`);
-    return;
-  }
+  const template = await getTemplate();
 
   try {
     // Create the file with header
@@ -263,6 +268,9 @@ async function createContestHandler() {
   const platforms = ['Codeforces', 'CSES', 'USACO', 'Petlja', 'Others'];
   const platform = await vscode.window.showQuickPick(platforms, { placeHolder: 'Select Platform' });
   if (!platform) return;
+
+  const url = await vscode.window.showInputBox({ prompt: 'Enter contest URL' });
+  if (!url) return;
 
   const contestName = await vscode.window.showInputBox({ prompt: 'Enter contest name' });
   if (!contestName) return;
@@ -288,12 +296,13 @@ async function createContestHandler() {
     await vscode.workspace.fs.createDirectory(contestFolder);
 
     const now = new Date();
-    const header = `// Start Time: ${now.toLocaleString()}\n\n`;
+    const header = `// Contest URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
+    const template = await getTemplate();
 
     for (let i = 0; i < taskCount; i++) {
       const taskName = String.fromCharCode(65 + i);
       const fileUri = vscode.Uri.joinPath(contestFolder, `${taskName}.cpp`);
-      await vscode.workspace.fs.writeFile(fileUri, Buffer.from(header, 'utf8'));
+      await vscode.workspace.fs.writeFile(fileUri, Buffer.from(header + template, 'utf8'));
     }
 
     vscode.window.showInformationMessage(`Contest "${contestName}" created with ${taskCount} tasks.`);
