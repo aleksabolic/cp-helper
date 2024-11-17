@@ -7,3 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 
 - Initial release
+
+- Release 0.0.4.
+Added feature for copying code without headers. 
+Fixed contest creation.
