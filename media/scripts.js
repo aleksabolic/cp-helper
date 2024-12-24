@@ -1,6 +1,11 @@
 const vscode = acquireVsCodeApi();
 let testCaseCount = 0;
 
+function autoResize(textarea, maxHeight) {
+    textarea.style.height = "";
+    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + "px";
+}
+
 document.getElementById('add-test-case').addEventListener('click', () => {
     addTestCase();
 });
@@ -29,6 +34,10 @@ function addTestCase() {
     inputBox.rows = 4; 
     inputBox.style.width = '100%'; 
     testCaseDiv.appendChild(inputBox);
+
+    // Auto-resize on input
+    const maxHeight = 200; // in px
+    inputBox.addEventListener('input', () => autoResize(inputBox, maxHeight));
     
     // Create Expected Output Textarea
     const outputLabel = document.createElement('label');
@@ -41,6 +50,9 @@ function addTestCase() {
     outputBox.rows = 4; 
     outputBox.style.width = '100%'; 
     testCaseDiv.appendChild(outputBox);
+
+    // Auto-resize on input
+    outputBox.addEventListener('input', () => autoResize(outputBox, maxHeight));
     
     // Create Delete Button with Trash Icon
     const deleteButton = document.createElement('button');

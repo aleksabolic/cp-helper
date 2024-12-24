@@ -16,12 +16,15 @@
     display: block;
     margin: 5px 0 15px 0;
     padding: 8px;
-    resize: none; /* Allows users to resize vertically */
-    font-family: monospace; /* Optional: for code-like appearance */
+    resize: none; /* Prevent manual resizing */
+    font-family: monospace;
     font-size: 14px;
     color: white;
-    box-sizing: border-box; /* Ensures padding doesn't exceed container */
+    box-sizing: border-box;
     background-color: black;
+    overflow-y: auto; /* Enable scrolling if content exceeds max height */
+    height: 60px; /* Initial height */
+    max-height: 200px;
 }
 .test-case button {
     margin-right: 10px;
