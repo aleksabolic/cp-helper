@@ -192,7 +192,7 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
 
 async function getTemplate(){
   // Path to the template folder inside your extension's directory
-  const extensionPath = vscode.extensions.getExtension('retard.cp-helper')?.extensionPath;
+  const extensionPath = vscode.extensions.getExtension('cp-helper.cp-helper')?.extensionPath;
   if (!extensionPath) {
     vscode.window.showErrorMessage('Unable to locate extension folder');
     return;
