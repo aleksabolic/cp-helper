@@ -16,12 +16,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:cp-helper.cpHelperView",
-    "onCommand:cp-helper.createNewFile",
-    "onCommand:cp-helper.createContest",
-    "onCommand:cp-helper.markAsAC",
-    "onCommand:cp-helper.markAsWA",
-    "onCommand:cp-helper.copyCode"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {

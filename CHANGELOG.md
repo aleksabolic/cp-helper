@@ -25,3 +25,6 @@ Test cases are now persistant after hiding extension side bar.
 
 - Release 0.0.10.
 Added template change feature and fixed compilation errors.
+
+- Release 0.0.11.
+Modified UI

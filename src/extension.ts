@@ -84,13 +84,20 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(createNewFile, createContest, markAsAC, markAsWA, copyCode);
 
 
-  // Create file status bar icon 
+  // Create file and contest status bar icon 
   let myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  myStatusBarItem.text = `$(plus) Create new file`;
+  myStatusBarItem.text = `$(new-file) Create new file`;
+  myStatusBarItem.tooltip = 'Create a new file with the template';
   myStatusBarItem.command = 'cp-helper.createNewFile';
   myStatusBarItem.show();
 
-  context.subscriptions.push(myStatusBarItem);
+  const createContestButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);  
+  createContestButton.text = '$(new-folder) Create Contest';
+  createContestButton.tooltip = 'Create a new contest folder with multiple files';
+  createContestButton.command = 'cp-helper.createContest';
+  createContestButton.show();
+
+  context.subscriptions.push(myStatusBarItem, createContestButton);
 
   // Add categories command
   const addCategoriesCommand = vscode.commands.registerCommand('cp-helper.addCategories', async () => {
