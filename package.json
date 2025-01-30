@@ -3,7 +3,7 @@
   "displayName": "CP Helper",
   "description": "VS Code extension for competitive programming workflow",
   "icon": "resources/logo.png",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "engines": {
     "vscode": "^1.93.0"
   },
