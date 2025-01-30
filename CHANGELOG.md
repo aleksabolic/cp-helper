@@ -22,3 +22,6 @@ Fixed some bugs.
 
 - Release 0.0.9.
 Test cases are now persistant after hiding extension side bar.
+
+- Release 0.0.10.
+Added template change feature and fixed compilation errors.
