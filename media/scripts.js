@@ -10,6 +10,46 @@ document.getElementById('add-test-case').addEventListener('click', () => {
     addTestCase();
 });
 
+document.getElementById('run-all').addEventListener('click', () => {
+    const testCases = document.querySelectorAll('.test-case');
+    const testCasesOut = [];
+
+    testCases.forEach(testCase => {
+        // Select the input and expected output fields
+        const inputField = testCase.querySelector('textarea[id^="input-"]');
+        const outputField = testCase.querySelector('textarea[id^="output-"]');
+
+        // Ensure both fields exist before adding
+        if (inputField && outputField) {
+            const obj = {
+                input: inputField.value.trim(),
+                expectedOutput: outputField.value.trim()
+            }
+            testCasesOut.push(obj);
+        }
+    });
+
+    // Send the collected data to VS Code
+    vscode.postMessage({
+        command: 'runAllTests',
+        testCases: testCasesOut
+    });
+
+    updateState();
+});
+
+window.addEventListener('message', event => {
+    const message = event.data;
+    switch (message.command) {
+        case 'testResult':
+            handleTestResults(message.results)
+            break;
+        case 'singleResult':
+            handleSingleResult(message.result, message.index);
+            break;       
+    }
+});
+
 function addTestCase() {
     testCaseCount++;
     const testCasesContainer = document.getElementById('test-cases');
@@ -38,6 +78,9 @@ function addTestCase() {
     // Auto-resize on input
     const maxHeight = 200; // in px
     inputBox.addEventListener('input', () => autoResize(inputBox, maxHeight));
+
+    // Auto-save the input box content
+    inputBox.addEventListener('input', updateState);
     
     // Create Expected Output Textarea
     const outputLabel = document.createElement('label');
@@ -53,8 +96,11 @@ function addTestCase() {
 
     // Auto-resize on input
     outputBox.addEventListener('input', () => autoResize(outputBox, maxHeight));
+
+    // Auto-save the input box content
+    outputBox.addEventListener('input', updateState);
     
-    // Create Delete Button with Trash Icon
+    // Create Delete Button 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('btn', 'btn-delete');
     deleteButton.innerHTML = `
@@ -65,6 +111,7 @@ function addTestCase() {
     `;
     deleteButton.addEventListener('click', () => {
         testCasesContainer.removeChild(testCaseDiv);
+        updateState();
     });
     testCaseDiv.appendChild(deleteButton);
     
@@ -87,50 +134,14 @@ function addTestCase() {
                 expectedOutput: outputBox.value,
             }
         });
+        updateState();
     });
     testCaseDiv.appendChild(submitButton);
     
     testCasesContainer.appendChild(testCaseDiv);
+    
+    updateState();
 }
-
-// Updated Run All Button Click Handler
-document.getElementById('run-all').addEventListener('click', () => {
-    const testCases = document.querySelectorAll('.test-case');
-    const testCasesOut = [];
-
-    testCases.forEach(testCase => {
-        // Select the input and expected output fields
-        const inputField = testCase.querySelector('textarea[id^="input-"]');
-        const outputField = testCase.querySelector('textarea[id^="output-"]');
-
-        // Ensure both fields exist before adding
-        if (inputField && outputField) {
-            const obj = {
-                input: inputField.value.trim(),
-                expectedOutput: outputField.value.trim()
-            }
-            testCasesOut.push(obj);
-        }
-    });
-
-    // Send the collected data to VS Code
-    vscode.postMessage({
-        command: 'runAllTests',
-        testCases: testCasesOut
-    });
-});
-
-window.addEventListener('message', event => {
-    const message = event.data;
-    switch (message.command) {
-        case 'testResult':
-            handleTestResults(message.results)
-            break;
-        case 'singleResult':
-            handleSingleResult(message.result, message.index);
-            break;       
-    }
-});
 
 function handleSingleResult(result, index){
     const testCase = document.getElementById(`test-case-${index}`);
@@ -147,6 +158,7 @@ function handleSingleResult(result, index){
 
     // Optionally, display a result message within the test case
     displayTestResult(testCase, status, result.output);
+    updateState();
 }
 
 function handleTestResults(results) {
@@ -175,13 +187,10 @@ function handleTestResults(results) {
         }
         displayTestResult(testCase, status, result.output);
     });
+
+    updateState();
 }
 
-/**
- * Displays the test result message within a test case.
- * @param {HTMLElement} testCase - The test case div element.
- * @param {Object} result - The result object for the test case.
- */
 function displayTestResult(testCase, status, output) {
     // Remove any existing result message
     let resultMsg = testCase.querySelector('.result-message');
@@ -220,4 +229,51 @@ function displayTestResult(testCase, status, output) {
     outputMsg.appendChild(outputContent);
 
     testCase.appendChild(outputMsg);
+    updateState();
+}
+
+function updateState() {
+    const testCases = [];
+
+    document.querySelectorAll('.test-case').forEach(testCase => {
+        const input = testCase.querySelector('textarea[id^="input-"]').value.trim();
+        const expectedOutput = testCase.querySelector('textarea[id^="output-"]').value.trim();
+        const status = testCase.classList.contains('passed') ? "AC" : testCase.classList.contains('failed') ? "Failed" : "neutral";
+
+        const outputMessage = testCase.querySelector('.output-message pre');
+        const actualOutput = outputMessage ? outputMessage.textContent : '';
+
+        testCases.push({ input, expectedOutput, status, actualOutput });
+    });
+
+    vscode.setState({ testCases });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const state = vscode.getState();
+    if (state && state.testCases) {
+        state.testCases.forEach(testCase => addTestCaseWithData(testCase));
+    }
+});
+
+function addTestCaseWithData(data) {
+    addTestCase();
+    const lastTestCase = document.querySelector(`.test-case:last-child`);
+
+    const inputBox = lastTestCase.querySelector('textarea[id^="input-"]');
+    const outputBox = lastTestCase.querySelector('textarea[id^="output-"]');
+
+    inputBox.value = data.input;
+    outputBox.value = data.expectedOutput;
+
+    // Restore the status
+    if (data.status === 'AC') {
+        lastTestCase.classList.add('passed');
+    } else if(data.status === 'Failed') {
+        lastTestCase.classList.add('failed');
+    }
+
+    if (data.actualOutput) {
+        displayTestResult(lastTestCase, data.status, data.actualOutput);
+    }
 }
