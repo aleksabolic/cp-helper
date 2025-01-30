@@ -19,3 +19,6 @@ Official release for vscode marketplace.
 
 - Release 0.0.7.
 Fixed some bugs.
+
+- Release 0.0.9.
+Test cases are now persistant after hiding extension side bar.
