@@ -145,6 +145,11 @@
             "Greedy"
           ],
           "description": "List of categories available for selection."
+        },
+        "cp-helper.templatePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to your custom template file for new files."
         }
       }
     }

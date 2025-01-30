@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 class CPHelperViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'cp-helper.cpHelperView';
@@ -117,11 +118,13 @@ async function runAllTests(testCases: any[]): Promise<any[]> {
   }
   const filePath = editor.document.uri.fsPath;
 
-  // Compile the program
-  const tempExecPath = vscode.Uri.joinPath(workspaceFolders[0].uri, 'exec', 'temp').fsPath;
+  // Generate a temporary executable path in the system's temp directory
+  const tempExecPath = path.join(os.tmpdir(), `temp_exec_${Date.now()}`);
+
   const compileCommand = `g++ -o "${tempExecPath}" "${filePath}"`;
 
   try {
+    // Compile the program
     await execPromise(compileCommand);
 
     for (const testCase of testCases) {
@@ -131,10 +134,16 @@ async function runAllTests(testCases: any[]): Promise<any[]> {
     }
   } catch (err: any) {
     vscode.window.showErrorMessage(`Compilation Error: ${err.message}`);
+  } finally {
+    // Clean up the temporary executable
+    if (fs.existsSync(tempExecPath)) {
+      fs.unlinkSync(tempExecPath);
+    }
   }
 
   return results;
 }
+
 
 function execPromise(command: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -190,19 +199,26 @@ async function runTestCase(execPath: string, input: string, expectedOutput: stri
   });
 }
 
-async function getTemplate(){
-  // Path to the template folder inside your extension's directory
-  const extensionPath = vscode.extensions.getExtension('cp-helper.cp-helper')?.extensionPath;
-  if (!extensionPath) {
-    vscode.window.showErrorMessage('Unable to locate extension folder');
-    return;
+async function getTemplate() {
+  const config = vscode.workspace.getConfiguration('cp-helper');
+  const customTemplatePath = config.get<string>('templatePath');
+
+  let templatePath = customTemplatePath;
+
+  // Fallback to the extension's template if the custom path is not set or invalid
+  if (!templatePath) {
+    const extensionPath = vscode.extensions.getExtension('cp-helper.cp-helper')?.extensionPath;
+    if (!extensionPath) {
+      vscode.window.showErrorMessage('Unable to locate extension folder');
+      return;
+    }
+    templatePath = `${extensionPath}/templates/main.cpp`;
   }
 
-  const templateUri = vscode.Uri.file(`${extensionPath}/templates/main.cpp`);
+  const templateUri = vscode.Uri.file(templatePath);
 
   let template = '';
   try {
-    // Read the template file content
     const templateFile = await vscode.workspace.fs.readFile(templateUri);
     template = templateFile.toString();
   } catch (err: any) {
