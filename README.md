@@ -1,7 +1,10 @@
 # CP Helper 
-![Downloads](https://img.shields.io/visual-studio-marketplace/d/cp-helper.cp-helper?color=green)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Faleksabolic%2Fcp-helper%2Fbadge%3Fref%3Dmaster)](https://actions-badge.atrox.dev/aleksabolic/cp-helper/goto?ref=master)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/cp-helper.cp-helper?color=green)](https://marketplace.visualstudio.com/items?itemName=cp-helper.cp-helper)
 
 A VS Code extension to streamline your competitive programming workflow. Create files and contests, manage test cases, and compile code with ease!
+
+![Demo](screenshots/main-demo.gif)
 
 ## Usage 💡
 ### Create New File
