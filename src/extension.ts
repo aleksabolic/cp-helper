@@ -151,7 +151,6 @@ async function runAllTests(testCases: any[]): Promise<any[]> {
   return results;
 }
 
-
 function execPromise(command: string): Promise<void> {
   return new Promise((resolve, reject) => {
     exec(command, (error: any, stdout: string, stderr: string) => {
@@ -291,61 +290,48 @@ async function createNewFileHandler() {
   const url = await vscode.window.showInputBox({ prompt: 'Enter problem URL' });
   if (!url) return;
 
-  const platforms = ['Codeforces', 'CSES', 'USACO', 'Petlja', 'Others'];
-  const platform = await vscode.window.showQuickPick(platforms, { placeHolder: 'Select Platform' });
-  if (!platform) return;
-
   const fileName = await vscode.window.showInputBox({ prompt: 'Enter file name' });
   if (!fileName) return;
 
-  // Construct the file path
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     vscode.window.showErrorMessage('No workspace folder open');
     return;
   }
 
-  const platformFolder = vscode.Uri.joinPath(workspaceFolders[0].uri, platform);
-  const targetFolder = await pickFolder(platformFolder);
+  // Let the user pick any folder recursively starting from the workspace root.
+  const targetFolder = await pickFolder(workspaceFolders[0].uri);
   if (!targetFolder) return;
 
   const fileUri = vscode.Uri.joinPath(targetFolder, `${fileName}.cpp`);
 
-  // Check if the file already exists and return if it does 
   try {
     await vscode.workspace.fs.stat(fileUri);
     vscode.window.showErrorMessage(`File "${fileName}.cpp" already exists.`);
     return;
   } catch (error: any) {
     if (error instanceof vscode.FileSystemError && error.code === 'FileNotFound') {
-      // File does not exist, proceed with creation
+      // File does not exist, proceed.
     } else {
       vscode.window.showErrorMessage(`Error checking file existence: ${error.message}`);
       return;
     }
   }
   
-  // Header content
   const now = new Date();
   const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
   const template = await getTemplate();
 
   try {
-    // Create the file with header
     await vscode.workspace.fs.writeFile(fileUri, Buffer.from(header + template, 'utf8'));
-    // Open the file
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
   } catch (err: any) {
     vscode.window.showErrorMessage(`Failed to create file: ${err.message}`);
   }
 }
-  
-async function createContestHandler() {
-  const platforms = ['Codeforces', 'CSES', 'USACO', 'Petlja', 'Others'];
-  const platform = await vscode.window.showQuickPick(platforms, { placeHolder: 'Select Platform' });
-  if (!platform) return;
 
+async function createContestHandler() {
   const url = await vscode.window.showInputBox({ prompt: 'Enter contest URL' });
   if (!url) return;
 
@@ -366,10 +352,13 @@ async function createContestHandler() {
     return;
   }
 
-  const contestFolder = vscode.Uri.joinPath(workspaceFolders[0].uri, platform, contestName);
+  // Let the user pick a folder recursively from the workspace root.
+  const targetFolder = await pickFolder(workspaceFolders[0].uri);
+  if (!targetFolder) return;
+
+  const contestFolder = vscode.Uri.joinPath(targetFolder, contestName);
 
   try {
-    // Create contest folder
     await vscode.workspace.fs.createDirectory(contestFolder);
 
     const now = new Date();
