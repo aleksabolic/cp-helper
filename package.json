@@ -2,7 +2,7 @@
   "name": "cp-helper",
   "displayName": "CP Helper",
   "description": "VS Code extension for competitive programming workflow",
-  "icon": "resources/logo.png",
+  "icon": "resources/main_logo.png",
   "version": "0.0.12",
   "engines": {
     "vscode": "^1.93.0"
@@ -25,7 +25,7 @@
         {
           "id": "cp-helper",
           "title": "CP Helper",
-          "icon": "resources/icon2.png"
+          "icon": "resources/logo_black.png"
         }
       ]
     },
