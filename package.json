@@ -137,7 +137,10 @@
           "default": [
             "Data Structures",
             "Dynamic Programming",
-            "Greedy"
+            "Greedy",
+            "Math",
+            "Binary search",
+            "Graphs"
           ],
           "description": "List of categories available for selection."
         },
@@ -145,6 +148,11 @@
           "type": "string",
           "default": "",
           "description": "Path to your custom template file for new files."
+        },
+        "cp-helper.timeout": {
+          "type": "integer",
+          "default": 2000,
+          "description": "Program execution time limit in milliseconds."
         }
       }
     }

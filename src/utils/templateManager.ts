@@ -1,31 +1,21 @@
 import * as vscode from 'vscode';
+import { ConfigService } from './configService';
+import { handleError } from './errorHandler';
 
 export async function getTemplate() {
-  const config = vscode.workspace.getConfiguration('cp-helper');
-  const customTemplatePath = config.get<string>('templatePath');
-
-  let templatePath = customTemplatePath;
+  let templatePath = ConfigService.templatePath;
 
   // Fallback to the extension's template if the custom path is not set or invalid
   if (!templatePath) {
-    const extensionPath = vscode.extensions.getExtension('cp-helper.cp-helper')?.extensionPath;
-    if (!extensionPath) {
-      vscode.window.showErrorMessage('Unable to locate extension folder');
-      return;
-    }
-    templatePath = `${extensionPath}/templates/main.cpp`;
+    return '#include <bits/stdc++.h>\nusing namespace std;\n\nint main()\n{\n   return 0;\n}';
   }
 
-  const templateUri = vscode.Uri.file(templatePath);
-
-  let template = '';
   try {
+    let templateUri = vscode.Uri.file(templatePath);
     const templateFile = await vscode.workspace.fs.readFile(templateUri);
-    template = templateFile.toString();
+    return templateFile.toString();
   } catch (err: any) {
-    vscode.window.showErrorMessage(`Failed to load template: ${err.message}`);
-    return;
+    handleError(err, "Template");
+    return '';
   }
-
-  return template;
 }

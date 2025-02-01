@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import {pickFolder} from '../utils/fileUtils'
 import {getTemplate} from '../utils/templateManager'
+import { handleError } from '../utils/errorHandler';
 
 export async function createNewFileHandler() {
   const url = await vscode.window.showInputBox({ prompt: 'Enter problem URL' });
@@ -8,6 +9,10 @@ export async function createNewFileHandler() {
 
   const fileName = await vscode.window.showInputBox({ prompt: 'Enter file name' });
   if (!fileName) return;
+  if (!validateFileName(fileName)){
+    vscode.window.showErrorMessage('Invalid file name');
+    return;
+  }
 
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -43,7 +48,7 @@ export async function createNewFileHandler() {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
   } catch (err: any) {
-    vscode.window.showErrorMessage(`Failed to create file: ${err.message}`);
+    handleError(err, "File creation")
   }
 }
 
@@ -53,6 +58,9 @@ export async function createContestHandler() {
 
   const contestName = await vscode.window.showInputBox({ prompt: 'Enter contest name' });
   if (!contestName) return;
+  if (!validateFileName(contestName)){
+    vscode.window.showErrorMessage(`Invalid file name`);
+  }
 
   const taskCountStr = await vscode.window.showInputBox({ prompt: 'Enter number of tasks' });
   if (!taskCountStr) return;
@@ -91,4 +99,31 @@ export async function createContestHandler() {
   } catch (err: any) {
     vscode.window.showErrorMessage(`Failed to create contest: ${err.message}`);
   }
+}
+
+function validateFileName(fileName: string): boolean {
+  // Define invalid characters and reserved names (Windows-specific restrictions)
+  const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+  const reservedNames = [
+    "CON", "PRN", "AUX", "NUL",
+    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+  ];
+
+  // Check if the filename is empty or too long
+  if (!fileName || fileName.length > 255) {
+    return false;
+  }
+
+  // Check for invalid characters
+  if (invalidChars.test(fileName)) {
+    return false;
+  }
+
+  // Check for reserved names (case-insensitive)
+  if (reservedNames.includes(fileName.toUpperCase())) {
+    return false;
+  }
+
+  return true;
 }

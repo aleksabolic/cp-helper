@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { ConfigService } from './configService';
 
 export async function runAllTests(testCases: any[]): Promise<any[]> {
   const results = [];
@@ -67,7 +68,7 @@ export async function runTestCase(execPath: string, input: string, expectedOutpu
     const timeout = setTimeout(() => {
       isTimeout = true;
       child.kill();
-    }, 2000); // Set a timeout of 2 seconds 
+    }, ConfigService.timeoutDuration); 
 
     child.stdin.write(input);
     child.stdin.end();

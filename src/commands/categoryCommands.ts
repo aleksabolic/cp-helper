@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ConfigService } from '../utils/configService';
 
 export async function addCategoriesHandler() {
   const editor = vscode.window.activeTextEditor;
@@ -7,8 +8,7 @@ export async function addCategoriesHandler() {
     return;
   }
 
-  const config = vscode.workspace.getConfiguration('cp-helper');
-  const categoriesList: string[] = config.get('categories', []);
+  const categoriesList = ConfigService.categories;
 
   if (categoriesList.length === 0) {
     vscode.window.showErrorMessage('No categories available. Please configure the categories list.');
@@ -50,7 +50,6 @@ export function insertCategoriesIntoHeader(editor: vscode.TextEditor, categories
         editor.edit(editBuilder => {
           editBuilder.replace(range, categoriesLine);
         });
-        vscode.window.showInformationMessage('Categories updated in the header.');
         return;
       }
     } else if (line === '') {
@@ -72,11 +71,5 @@ export function insertCategoriesIntoHeader(editor: vscode.TextEditor, categories
 
   editor.edit(editBuilder => {
     editBuilder.insert(insertPosition, categoriesLine);
-  }).then(success => {
-    if (success) {
-      vscode.window.showInformationMessage('Categories added to the header.');
-    } else {
-      vscode.window.showErrorMessage('Failed to insert categories into the header.');
-    }
   });
 }
