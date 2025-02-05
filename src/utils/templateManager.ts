@@ -19,3 +19,7 @@ export async function getTemplate() {
     return '';
   }
 }
+
+export async function getLatexTemplate(){
+  return "";
+}
