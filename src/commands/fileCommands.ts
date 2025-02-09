@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import {pickFolder} from '../utils/fileUtils'
 import {getTemplate, getLatexTemplate} from '../utils/templateManager'
 import { handleError } from '../utils/errorHandler';
+import { ConfigService } from '../utils/configService';
+
 
 export async function createNewFileHandler() {
   // Get the problem URL.
@@ -54,24 +56,19 @@ export async function createNewFileHandler() {
     return;
   }
 
-  // Create the LaTeX file by calling a separate function.
-  const workspaceRoot = workspaceFolders[0].uri;
-  const latexFileUri = await createLatexFile(fileName, url, now, targetFolder, workspaceRoot);
-  if (!latexFileUri) {
-    // If LaTeX creation fails, open only the C++ file.
-    const cppDoc = await vscode.workspace.openTextDocument(cppFileUri);
-    await vscode.window.showTextDocument(cppDoc, { viewColumn: vscode.ViewColumn.One });
-    return;
-  }
+  const cppDoc = await vscode.workspace.openTextDocument(cppFileUri);
+  await vscode.window.showTextDocument(cppDoc, { viewColumn: vscode.ViewColumn.One });
 
-  // Open both files in a split screen: left for the C++ file, right for the LaTeX file.
-  try {
-    const cppDoc = await vscode.workspace.openTextDocument(cppFileUri);
-    const latexDoc = await vscode.workspace.openTextDocument(latexFileUri);
-    await vscode.window.showTextDocument(cppDoc, { viewColumn: vscode.ViewColumn.One });
-    await vscode.window.showTextDocument(latexDoc, { viewColumn: vscode.ViewColumn.Two });
-  } catch (err: any) {
-    handleError(err, "Opening files");
+  // Create the LaTeX file.
+  if (ConfigService.createLatexFile){
+    const workspaceRoot = workspaceFolders[0].uri;
+    const latexFileUri = await createLatexFile(fileName, url, now, targetFolder, workspaceRoot);
+
+    if (!latexFileUri) return;
+
+    // Open the .tex file in the right editor (Column 2).
+    const texDoc = await vscode.workspace.openTextDocument(latexFileUri);
+    await vscode.window.showTextDocument(texDoc, { viewColumn: vscode.ViewColumn.Two});
   }
 }
 
@@ -162,7 +159,7 @@ async function createLatexFile(
   const relativePath = vscode.workspace.asRelativePath(targetFolder);
   const pathSegments = relativePath ? relativePath.split(/[\/\\]+/) : [];
   // Build the LaTeX folder URI: workingDirectory/latex/path/to.
-  const latexFolderUri = vscode.Uri.joinPath(workspaceRoot, 'latex', ...pathSegments);
+  const latexFolderUri = vscode.Uri.joinPath(workspaceRoot, 'latex', ...pathSegments, fileName);
   
   // Ensure the LaTeX directory exists.
   try {
@@ -173,7 +170,7 @@ async function createLatexFile(
   }
 
   // Construct the LaTeX file URI.
-  const latexFileUri = vscode.Uri.joinPath(latexFolderUri, `${fileName}.tex`);
+  const latexFileUri = vscode.Uri.joinPath(latexFolderUri,`${fileName}.tex`);
 
   // Check if the LaTeX file already exists.
   try {

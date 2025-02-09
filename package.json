@@ -147,12 +147,22 @@
         "cp-helper.templatePath": {
           "type": "string",
           "default": "",
-          "description": "Path to your custom template file for new files."
+          "description": "Path to your custom template file for new .cpp files."
         },
         "cp-helper.timeout": {
           "type": "integer",
           "default": 2000,
           "description": "Program execution time limit in milliseconds."
+        },
+        "cp-helper.createLatexFile": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether you want to create .tex file alongside .cpp one."
+        },
+        "cp-helper.latexTemplatePath": {
+          "type":"string",
+          "default": "",
+          "description": "Path to your custom template file for new .tex files."
         }
       }
     }

@@ -21,5 +21,18 @@ export async function getTemplate() {
 }
 
 export async function getLatexTemplate(){
-  return "";
+  let templatePath = ConfigService.latexTemplatePath;
+
+  if (!templatePath) {
+    return "\\documentclass{article}\n\\begin{document}\nYour content here.\n\\end{document}";
+  }
+
+  try {
+    let templateUri = vscode.Uri.file(templatePath);
+    const templateFile = await vscode.workspace.fs.readFile(templateUri);
+    return templateFile.toString();
+  } catch (err: any) {
+    handleError(err, "Latex template");
+    return '';
+  }
 }
