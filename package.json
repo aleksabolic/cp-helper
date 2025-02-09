@@ -3,7 +3,7 @@
   "displayName": "CP Helper",
   "description": "VS Code extension for competitive programming workflow",
   "icon": "resources/main_logo.png",
-  "version": "0.0.13",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.93.0"
   },
@@ -170,7 +170,7 @@
           "description": "Whether you want to create .tex file alongside .cpp one."
         },
         "cp-helper.latexTemplatePath": {
-          "type":"string",
+          "type": "string",
           "default": "",
           "description": "Path to your custom template file for new .tex files."
         }
