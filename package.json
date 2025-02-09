@@ -54,6 +54,11 @@
           "command": "cp-helper.addCategories",
           "when": "resourceLangId == cpp",
           "group": "navigation"
+        },
+        {
+          "command": "cp-helper.openLatexFile",
+          "when": "resourceLangId == cpp",
+          "group": "navigation"
         }
       ],
       "editor/context": [
@@ -93,6 +98,11 @@
       {
         "command": "cp-helper.copyCode",
         "title": "Copy without Headers",
+        "category": "CP Helper"
+      },
+      {
+        "command": "cp-helper.openLatexFile",
+        "title": "Open LaTeX File",
         "category": "CP Helper"
       }
     ],

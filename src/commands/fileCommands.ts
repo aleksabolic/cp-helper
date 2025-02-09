@@ -62,7 +62,7 @@ export async function createNewFileHandler() {
   // Create the LaTeX file.
   if (ConfigService.createLatexFile){
     const workspaceRoot = workspaceFolders[0].uri;
-    const latexFileUri = await createLatexFile(fileName, url, now, targetFolder, workspaceRoot);
+    const latexFileUri = await createLatexFile(fileName, targetFolder, workspaceRoot);
 
     if (!latexFileUri) return;
 
@@ -148,10 +148,8 @@ function validateFileName(fileName: string): boolean {
   return true;
 }
 
-async function createLatexFile(
+export async function createLatexFile(
   fileName: string,
-  url: string,
-  now: Date,
   targetFolder: vscode.Uri,
   workspaceRoot: vscode.Uri
 ): Promise<vscode.Uri | null> {
@@ -184,12 +182,11 @@ async function createLatexFile(
     }
   }
 
-  const latexHeader = `% Problem URL: ${url}\n% Start Time: ${now.toLocaleString()}\n\n`;
   const latexTemplate = await getLatexTemplate();
 
   // Write the LaTeX file.
   try {
-    await vscode.workspace.fs.writeFile(latexFileUri, Buffer.from(latexHeader + latexTemplate, 'utf8'));
+    await vscode.workspace.fs.writeFile(latexFileUri, Buffer.from(latexTemplate, 'utf8'));
     return latexFileUri;
   } catch (err: any) {
     handleError(err, "LaTeX file creation");

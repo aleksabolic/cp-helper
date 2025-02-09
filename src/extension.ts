@@ -18,7 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
     { name: 'markAsAC', handler: () => commands.markProblem('AC') },
     { name: 'markAsWA', handler: () => commands.markProblem('WA') },
     { name: 'copyCode', handler: commands.copyNoHeaders },
-    { name: 'addCategories', handler: commands.addCategoriesHandler }
+    { name: 'addCategories', handler: commands.addCategoriesHandler },
+    { name: 'openLatexFile', handler: commands.openLatexFile }
   ];
 
   registeredCommands.forEach(({ name, handler }) => {
