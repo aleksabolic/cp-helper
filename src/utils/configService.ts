@@ -12,4 +12,12 @@ export class ConfigService {
   static get timeoutDuration(): number {
     return vscode.workspace.getConfiguration('cp-helper').get('timeout') || 2000;
   }
+
+  static get createLatexFile(): boolean {
+    return vscode.workspace.getConfiguration('cp-helper').get('createLatexFile') || false;
+  }
+
+  static get latexTemplatePath(): string {
+    return vscode.workspace.getConfiguration('cp-helper').get('latexTemplatePath') || '';
+  }
 }
