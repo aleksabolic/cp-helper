@@ -28,3 +28,9 @@ Added template change feature and fixed compilation errors.
 
 - Release 0.0.11.
 Modified UI
+
+- Release 0.1.0
+Added LaTeX file creation feature. Now you can open .tex file while coding and add notes about the problem...
+
+- Release 0.1.1
+Fixed latex creation feature.

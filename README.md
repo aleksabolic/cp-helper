@@ -28,6 +28,7 @@ Install CP Helper from [this](https://marketplace.visualstudio.com/items?itemNam
 - **Test Management:** Add, delete, and run multiple test cases.
 - **Status Bar Integration:** Easily access features from the VS Code status bar.
 - **Search Problems By Category** Quickly find problems by category and monitor your progress with achievement tracking.
+- **Create LaTeX files** Create LaTeX files alongside cpp so you can document your solutions.
 
 ## Suported languages
 - C++

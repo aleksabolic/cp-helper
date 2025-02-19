@@ -51,3 +51,50 @@ export async function pickFolder(currentUri: vscode.Uri): Promise<vscode.Uri | u
   return pickFolder(subfolderUri);
 }
 
+export function validateFileName(fileName: string): boolean {
+  // Define invalid characters and reserved names (Windows-specific restrictions)
+  const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+  const reservedNames = [
+    "CON", "PRN", "AUX", "NUL",
+    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+  ];
+
+  // Check if the filename is empty or too long
+  if (!fileName || fileName.length > 255) {
+    return false;
+  }
+
+  // Check for invalid characters
+  if (invalidChars.test(fileName)) {
+    return false;
+  }
+
+  // Check for reserved names (case-insensitive)
+  if (reservedNames.includes(fileName.toUpperCase())) {
+    return false;
+  }
+
+  return true;
+}
+
+export function getHeader(url: string): string {
+  const now = new Date();
+  const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
+  return header
+}
+
+export async function checkFileDoesNotExist(fileUri: vscode.Uri, fileDisplayName: string): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(fileUri);
+    vscode.window.showErrorMessage(`File "${fileDisplayName}" already exists.`);
+    return false;
+  } catch (error: any) {
+    if (error instanceof vscode.FileSystemError && error.code === 'FileNotFound') {
+      return true;
+    } else {
+      vscode.window.showErrorMessage(`Error checking file existence: ${error.message}`);
+      return false;
+    }
+  }
+}

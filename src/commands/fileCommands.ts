@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {pickFolder} from '../utils/fileUtils'
+import {pickFolder, validateFileName, getHeader, checkFileDoesNotExist} from '../utils/fileUtils'
 import {getTemplate, getLatexTemplate} from '../utils/templateManager'
 import { handleError } from '../utils/errorHandler';
 import { ConfigService } from '../utils/configService';
@@ -31,21 +31,9 @@ export async function createNewFileHandler() {
 
   // Construct the C++ file URI.
   const cppFileUri = vscode.Uri.joinPath(targetFolder, `${fileName}.cpp`);
-
-  // Check if the C++ file already exists.
-  try {
-    await vscode.workspace.fs.stat(cppFileUri);
-    vscode.window.showErrorMessage(`File "${fileName}.cpp" already exists.`);
-    return;
-  } catch (error: any) {
-    if (!(error instanceof vscode.FileSystemError && error.code === 'FileNotFound')) {
-      vscode.window.showErrorMessage(`Error checking file existence: ${error.message}`);
-      return;
-    }
-  }
+  if (!(await checkFileDoesNotExist(cppFileUri, `${fileName}.cpp`))) return;
   
-  const now = new Date();
-  const header = `// Problem URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
+  const header = getHeader(url);
   const cppTemplate = await getTemplate();
 
   // Write the C++ file.
@@ -56,20 +44,9 @@ export async function createNewFileHandler() {
     return;
   }
 
+  // Open the C++ file.
   const cppDoc = await vscode.workspace.openTextDocument(cppFileUri);
-  await vscode.window.showTextDocument(cppDoc, { viewColumn: vscode.ViewColumn.One });
-
-  // Create the LaTeX file.
-  if (ConfigService.createLatexFile){
-    const workspaceRoot = workspaceFolders[0].uri;
-    const latexFileUri = await createLatexFile(fileName, targetFolder, workspaceRoot);
-
-    if (!latexFileUri) return;
-
-    // Open the .tex file in the right editor (Column 2).
-    const texDoc = await vscode.workspace.openTextDocument(latexFileUri);
-    await vscode.window.showTextDocument(texDoc, { viewColumn: vscode.ViewColumn.Two});
-  }
+  await vscode.window.showTextDocument(cppDoc);
 }
 
 export async function createContestHandler() {
@@ -105,8 +82,7 @@ export async function createContestHandler() {
   try {
     await vscode.workspace.fs.createDirectory(contestFolder);
 
-    const now = new Date();
-    const header = `// Contest URL: ${url}\n// Start Time: ${now.toLocaleString()}\n\n`;
+    const header = getHeader(url);
     const template = await getTemplate();
 
     for (let i = 0; i < taskCount; i++) {
@@ -118,78 +94,5 @@ export async function createContestHandler() {
     vscode.window.showInformationMessage(`Contest "${contestName}" created with ${taskCount} tasks.`);
   } catch (err: any) {
     vscode.window.showErrorMessage(`Failed to create contest: ${err.message}`);
-  }
-}
-
-function validateFileName(fileName: string): boolean {
-  // Define invalid characters and reserved names (Windows-specific restrictions)
-  const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
-  const reservedNames = [
-    "CON", "PRN", "AUX", "NUL",
-    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-  ];
-
-  // Check if the filename is empty or too long
-  if (!fileName || fileName.length > 255) {
-    return false;
-  }
-
-  // Check for invalid characters
-  if (invalidChars.test(fileName)) {
-    return false;
-  }
-
-  // Check for reserved names (case-insensitive)
-  if (reservedNames.includes(fileName.toUpperCase())) {
-    return false;
-  }
-
-  return true;
-}
-
-export async function createLatexFile(
-  fileName: string,
-  targetFolder: vscode.Uri,
-  workspaceRoot: vscode.Uri
-): Promise<vscode.Uri | null> {
-  // Compute the relative path of the target folder from the workspace root.
-  const relativePath = vscode.workspace.asRelativePath(targetFolder);
-  const pathSegments = relativePath ? relativePath.split(/[\/\\]+/) : [];
-  // Build the LaTeX folder URI: workingDirectory/latex/path/to.
-  const latexFolderUri = vscode.Uri.joinPath(workspaceRoot, 'latex', ...pathSegments, fileName);
-  
-  // Ensure the LaTeX directory exists.
-  try {
-    await vscode.workspace.fs.createDirectory(latexFolderUri);
-  } catch (err: any) {
-    vscode.window.showErrorMessage(`Error creating LaTeX directory: ${err.message}`);
-    return null;
-  }
-
-  // Construct the LaTeX file URI.
-  const latexFileUri = vscode.Uri.joinPath(latexFolderUri,`${fileName}.tex`);
-
-  // Check if the LaTeX file already exists.
-  try {
-    await vscode.workspace.fs.stat(latexFileUri);
-    vscode.window.showErrorMessage(`LaTeX file "${fileName}.tex" already exists.`);
-    return null;
-  } catch (error: any) {
-    if (!(error instanceof vscode.FileSystemError && error.code === 'FileNotFound')) {
-      vscode.window.showErrorMessage(`Error checking LaTeX file existence: ${error.message}`);
-      return null;
-    }
-  }
-
-  const latexTemplate = await getLatexTemplate();
-
-  // Write the LaTeX file.
-  try {
-    await vscode.workspace.fs.writeFile(latexFileUri, Buffer.from(latexTemplate, 'utf8'));
-    return latexFileUri;
-  } catch (err: any) {
-    handleError(err, "LaTeX file creation");
-    return null;
   }
 }

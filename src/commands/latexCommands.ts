@@ -47,17 +47,13 @@ export async function openLatexFile() {
     const texDoc = await vscode.workspace.openTextDocument(latexFileUri);
     await vscode.window.showTextDocument(texDoc, { viewColumn: vscode.ViewColumn.Two});
   } catch (err) {
-    // File doesn't exist. Check your configuration to see if we should create it.
-    if (ConfigService.createLatexFile) {
-      await vscode.workspace.fs.createDirectory(latexFolderUri);
+    // File doesn't exist.
+    await vscode.workspace.fs.createDirectory(latexFolderUri);
 
-      const latexTemplate = await getLatexTemplate(); 
-      await vscode.workspace.fs.writeFile(latexFileUri, Buffer.from(latexTemplate, "utf8"));
+    const latexTemplate = await getLatexTemplate(); 
+    await vscode.workspace.fs.writeFile(latexFileUri, Buffer.from(latexTemplate, "utf8"));
 
-      const texDoc = await vscode.workspace.openTextDocument(latexFileUri);
-      await vscode.window.showTextDocument(texDoc, { viewColumn: vscode.ViewColumn.Two});
-    } else {
-      vscode.window.showInformationMessage("LaTeX file does not exist and creation is disabled in your configuration.");
-    }
+    const texDoc = await vscode.workspace.openTextDocument(latexFileUri);
+    await vscode.window.showTextDocument(texDoc, { viewColumn: vscode.ViewColumn.Two});
   }
 }
