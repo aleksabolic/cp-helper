@@ -9,10 +9,30 @@ export async function pickFolder(currentUri: vscode.Uri): Promise<vscode.Uri | u
     return;
   }
 
+  let ignoreList: string[] = [];
+  const ignoreEntry = items.find(
+    ([name, fileType]) => name === '.cphignore' && (fileType & vscode.FileType.File)
+  );
+  if (ignoreEntry) {
+    const ignoreUri = vscode.Uri.joinPath(currentUri, '.cphignore');
+    try {
+      const fileContent = await vscode.workspace.fs.readFile(ignoreUri);
+      // Decode the file content as UTF-8
+      const contentStr = new TextDecoder('utf-8').decode(fileContent);
+      ignoreList = contentStr
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'));
+    } catch (err) {
+      console.error("Error reading .cphignore:", err);
+    }
+  }
+
   // Filter out subfolders from all items
   const subfolders = items
     .filter(([_, fileType]) => fileType === vscode.FileType.Directory)
-    .map(([name]) => name);
+    .map(([name]) => name)
+    .filter(name => !ignoreList.includes(name));
 
   // Build QuickPick items
   const pickItems = [
