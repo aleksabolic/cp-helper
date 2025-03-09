@@ -24,15 +24,9 @@ export class CPHelperViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async message => {
-      switch (message.command) {
-        case 'runAllTests':
-          const results = await runAllTests(message.testCases);
-          webviewView.webview.postMessage({ command: 'testResult', results: results });
-          break;
-        case 'submitTestCase':
-          const result = await runAllTests([message.testCase]);
-          webviewView.webview.postMessage({ command: 'singleResult', result: result[0], index: message.index });
-          break;
+      if(message.command == 'runTests'){
+        await runAllTests(message.testCases);
+        webviewView.webview.postMessage({ command: 'testResult', results: message.testCases });
       }
     });
   }
@@ -46,7 +40,7 @@ export class CPHelperViewProvider implements vscode.WebviewViewProvider {
     let html = fs.readFileSync(htmlPath, 'utf8');
 
     const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'styles.css'));
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'scripts.js'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'scripts', 'main.js'));
 
     // Replace the NONCE_PLACEHOLDER with the actual nonce
     html = html.replace(/NONCE_PLACEHOLDER/g, nonce)

@@ -4,11 +4,10 @@ import { exec } from 'child_process';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { TestCase } from '../types/testCase';
 import { ConfigService } from './configService';
 
-export async function runAllTests(testCases: any[]): Promise<any[]> {
-  const results = [];
-
+export async function runAllTests(testCases: TestCase[]) {
   // Check if workspaceFolders is defined
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -34,9 +33,12 @@ export async function runAllTests(testCases: any[]): Promise<any[]> {
     await execPromise(compileCommand);
 
     for (const testCase of testCases) {
-      const { input, expectedOutput } = testCase;
-      const result = await runTestCase(tempExecPath, input, expectedOutput);
-      results.push(result);
+      const result = await runTestCase(tempExecPath, testCase.input, testCase.expectedOutput);
+      testCase.status = result.status;
+      testCase.actualOutput = result.output;
+      if(result.error){
+        testCase.error = result.error;
+      }
     }
   } catch (err: any) {
     vscode.window.showErrorMessage(`Compilation Error: ${err.message}`);
@@ -46,8 +48,6 @@ export async function runAllTests(testCases: any[]): Promise<any[]> {
       fs.unlinkSync(tempExecPath);
     }
   }
-
-  return results;
 }
 
 export async function runTestCase(execPath: string, input: string, expectedOutput: string): Promise<any> {
