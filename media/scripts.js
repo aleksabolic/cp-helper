@@ -15,6 +15,10 @@ document.getElementById('run-all').addEventListener('click', () => {
     const testCasesOut = [];
 
     testCases.forEach(testCase => {
+        // Enable spinner 
+        let spinner = testCase.querySelector('.spinner');
+        spinner.style.visibility = 'visible';
+
         // Select the input and expected output fields
         const inputField = testCase.querySelector('textarea[id^="input-"]');
         const outputField = testCase.querySelector('textarea[id^="output-"]');
@@ -58,12 +62,13 @@ function addTestCase() {
     testCaseDiv.classList.add('test-case');
     testCaseDiv.id = `test-case-${testCaseCount}`;
     
+    // Title
     const testCaseTitle = document.createElement('p');
     testCaseTitle.textContent = `#${testCaseCount} Test Case`;
     testCaseTitle.style.fontWeight = 'bold';
     testCaseDiv.appendChild(testCaseTitle);
     
-    // Create Input Textarea
+    // Input Textarea
     const inputLabel = document.createElement('label');
     inputLabel.textContent = 'Input:';
     inputLabel.htmlFor = `input-${testCaseCount}`;
@@ -82,7 +87,7 @@ function addTestCase() {
     // Auto-save the input box content
     inputBox.addEventListener('input', updateState);
     
-    // Create Expected Output Textarea
+    // Expected Output Textarea
     const outputLabel = document.createElement('label');
     outputLabel.textContent = 'Expected Output:';
     outputLabel.htmlFor = `output-${testCaseCount}`;
@@ -113,9 +118,8 @@ function addTestCase() {
         testCasesContainer.removeChild(testCaseDiv);
         updateState();
     });
-    testCaseDiv.appendChild(deleteButton);
     
-    // Create Submit Button with Checkmark Icon
+    // Submit Button
     const submitButton = document.createElement('button');
     submitButton.classList.add('btn', 'btn-submit');
     submitButton.innerHTML = `
@@ -126,6 +130,8 @@ function addTestCase() {
     `;
     let tempCount = testCaseCount;
     submitButton.addEventListener('click', () => {
+        spinner.style.visibility = 'visible';
+
         vscode.postMessage({
             command: 'submitTestCase',
             index: tempCount,
@@ -136,8 +142,22 @@ function addTestCase() {
         });
         updateState();
     });
-    testCaseDiv.appendChild(submitButton);
+
+    // Spinner
+    const spinner = document.createElement('div');
+    spinner.classList.add('spinner');
+
+    // *Button container is used to put submit and delete button in the same row as spinner*
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.alignItems = 'center';
+    buttonContainer.style.gap = '2px'; 
     
+    buttonContainer.appendChild(deleteButton);
+    buttonContainer.appendChild(submitButton);
+    buttonContainer.appendChild(spinner);
+    testCaseDiv.appendChild(buttonContainer);
+
     testCasesContainer.appendChild(testCaseDiv);
     
     updateState();
@@ -145,6 +165,9 @@ function addTestCase() {
 
 function handleSingleResult(result, index){
     const testCase = document.getElementById(`test-case-${index}`);
+
+    // Hide spinner
+    testCase.querySelector('.spinner').style.visibility = 'hidden';
 
     testCase.classList.remove('passed', 'failed');
 
@@ -164,16 +187,10 @@ function handleSingleResult(result, index){
 function handleTestResults(results) {
     const testCases = document.querySelectorAll('.test-case');
 
-    if (!Array.isArray(results)) {
-        console.error('Invalid results format: Expected an array.');
-        return;
-    }
-
-    if (results.length !== testCases.length) {
-        console.warn('Number of results does not match number of test cases.');
-    }
-
     testCases.forEach((testCase, index) => {
+        // Hide spinner
+        testCase.querySelector('.spinner').style.visibility = 'hidden'; 
+
         // Remove existing status classes
         testCase.classList.remove('passed', 'failed');
 
