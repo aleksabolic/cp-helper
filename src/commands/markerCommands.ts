@@ -55,5 +55,4 @@ export async function copyNoHeaders() {
 
   // Copy the code to the clipboard
   await vscode.env.clipboard.writeText(codeWithoutHeaders);
-  vscode.window.showInformationMessage('Code without headers copied to clipboard.');
 }

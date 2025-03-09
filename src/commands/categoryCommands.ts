@@ -27,6 +27,7 @@ export async function addCategoriesHandler() {
 
   // Insert categories into the file header
   insertCategoriesIntoHeader(editor, selectedCategories);
+  await editor.document.save();
 }
 
 export function insertCategoriesIntoHeader(editor: vscode.TextEditor, categories: string[]) {
